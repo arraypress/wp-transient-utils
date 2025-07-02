@@ -183,7 +183,7 @@ class Transients {
 	public static function delete_by_pattern( string $pattern, string $type = 'exact' ): int {
 		global $wpdb;
 
-		$sql_pattern = Utils::generate_like_pattern( $pattern, $type, '_transient_' );
+		$sql_pattern = self::generate_like_pattern( $pattern, $type, '_transient_' );
 		$transients  = $wpdb->get_col( $wpdb->prepare(
 			"SELECT option_name FROM $wpdb->options 
              WHERE option_name LIKE %s 
@@ -211,6 +211,38 @@ class Transients {
 	 */
 	public static function delete_by_prefix( string $prefix ): int {
 		return self::delete_by_pattern( $prefix, 'prefix' );
+	}
+
+	// ========================================
+	// Private Helper Methods
+	// ========================================
+
+	/**
+	 * Generate a general LIKE pattern for database queries.
+	 *
+	 * @param string $pattern The pattern to match.
+	 * @param string $type    The type of pattern matching: 'prefix', 'suffix', 'substring', or 'exact'.
+	 * @param string $prefix  Optional prefix to add before the pattern. Default empty.
+	 *
+	 * @return string The SQL LIKE pattern.
+	 */
+	private static function generate_like_pattern( string $pattern, string $type, string $prefix = '' ): string {
+		global $wpdb;
+
+		$escaped_pattern = $wpdb->esc_like( $pattern );
+		$full_prefix     = $prefix ? $wpdb->esc_like( $prefix ) : '';
+
+		switch ( $type ) {
+			case 'prefix':
+				return $full_prefix . $escaped_pattern . '%';
+			case 'suffix':
+				return $full_prefix . '%' . $escaped_pattern;
+			case 'substring':
+				return $full_prefix . '%' . $escaped_pattern . '%';
+			case 'exact':
+			default:
+				return $full_prefix . $escaped_pattern;
+		}
 	}
 
 }

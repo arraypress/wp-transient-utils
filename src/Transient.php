@@ -71,10 +71,10 @@ class Transient {
 		$value = self::get( $transient );
 
 		if ( $value === false && $default !== null ) {
-			return Utils::cast_value( $default, $cast_type );
+			return self::cast_value( $default, $cast_type );
 		}
 
-		return Utils::cast_value( $value, $cast_type );
+		return self::cast_value( $value, $cast_type );
 	}
 
 	/**
@@ -205,6 +205,38 @@ class Transient {
 	 */
 	public static function is_large( string $transient, int $size_limit = 1048576 ): bool {
 		return self::get_size( $transient ) > $size_limit;
+	}
+
+	// ========================================
+	// Private Helper Methods
+	// ========================================
+
+	/**
+	 * Cast a value to a specific type.
+	 *
+	 * @param mixed  $value Value to cast.
+	 * @param string $type  Type to cast to.
+	 *
+	 * @return mixed Casted value.
+	 */
+	private static function cast_value( $value, string $type ) {
+		switch ( strtolower( $type ) ) {
+			case 'int':
+			case 'integer':
+				return (int) $value;
+			case 'float':
+			case 'double':
+				return (float) $value;
+			case 'bool':
+			case 'boolean':
+				return (bool) $value;
+			case 'array':
+				return (array) $value;
+			case 'string':
+				return (string) $value;
+			default:
+				return $value;
+		}
 	}
 
 }
